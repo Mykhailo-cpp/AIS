@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Grades - Academic Information System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #666;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .filter-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filter-card h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 18px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .grades-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .grades-section h3 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 18px;
+        }
+
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grades-table thead {
+            background: #f8f9fa;
+        }
+
+        .grades-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .grades-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .grades-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .student-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .student-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .student-email {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .grade-excellent {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .grade-good {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .grade-average {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .grade-poor {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 60px;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 2rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<div class="navbar">
+    <div class="navbar-content">
+        <h1>🎓 Academic Information System</h1>
+        <div class="navbar-right">
+            <div class="nav-links">
+                <a href="/teacher/dashboard">Dashboard</a>
+                <a href="/teacher/grades" class="active">Manage Grades</a>
+            </div>
+            <div class="user-info">
+                <span>👨‍🏫 <span th:text="${session.displayName}">Teacher</span></span>
+            </div>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h2>📝 Grade Management</h2>
+            <p>View and manage student grades</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('addGradeModal')">
+            ➕ Add New Grade
+        </button>
+    </div>
+
+    <!-- Alert Messages -->
+    <div th:if="${success}" class="alert alert-success">
+        ✓ <span th:text="${success}"></span>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger">
+        ⚠ <span th:text="${error}"></span>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-card">
+        <h3>🔍 Filter Grades</h3>
+        <form method="get" action="/teacher/grades">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>Subject</label>
+                    <select name="subjectId" onchange="this.form.submit()">
+                        <option value="">All Subjects</option>
+                        <option th:each="assignment : ${assignments}"
+                                th:if="${assignment != null and assignment.subject != null}"
+                                th:value="${assignment.subject.subjectId}"
+                                th:text="${assignment.subject.subjectName} + ' - ' + ${assignment.group.groupName}"
+                                th:selected="${assignment.subject.subjectId == selectedSubjectId}">
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assignment</label>
+                    <select name="assignmentId" onchange="this.form.submit()">
+                        <option value="">All Assignments</option>
+                        <option th:each="assignment : ${assignments}"
+                                th:if="${assignment != null and assignment.subject != null}"
+                                th:value="${assignment.assignmentId}"
+                                th:text="${assignment.subject.subjectName} + ' (' + ${assignment.group.groupName} + ')'"
+                                th:selected="${assignment.assignmentId == selectedAssignmentId}">
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <a href="/teacher/grades" class="btn btn-outline">🔄 Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Grades Table -->
+    <div class="grades-section">
+        <h3>📊 Student Grades</h3>
+
+        <div th:if="${grades != null and !grades.empty}">
+            <table class="grades-table">
+                <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Subject</th>
+                    <th>Group</th>
+                    <th>Grade</th>
+                    <th>Date</th>
+                    <th>Comments</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="grade : ${grades}">
+                    <td>
+                        <div class="student-cell">
+                            <div class="student-avatar"
+                                 th:text="${#strings.substring(grade.student.firstName, 0, 1) + #strings.substring(grade.student.lastName, 0, 1)}">
+                            </div>
+                            <div class="student-info">
+                                <span class="student-name" th:text="${grade.student.firstName + ' ' + grade.student.lastName}"></span>
+                                <span class="student-email" th:text="${grade.student.email}"></span>
+                            </div>
+                        </div>
+                    </td>
+                    <td th:text="${grade.assignment.subject.subjectName}"></td>
+                    <td th:text="${grade.assignment.group.groupName}"></td>
+                    <td>
+                        <span class="grade-badge"
+                              th:classappend="${grade.gradeValue >= 9} ? 'grade-excellent' :
+                                              (${grade.gradeValue >= 7} ? 'grade-good' :
+                                              (${grade.gradeValue >= 5} ? 'grade-average' : 'grade-poor'))"
+                              th:text="${grade.gradeValue}">
+                        </span>
+                    </td>
+                    <td th:text="${#temporals.format(grade.gradeDate, 'yyyy-MM-dd')}"></td>
+                    <td th:text="${grade.comments != null ? grade.comments : '-'}"></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-sm edit-btn"
+                                    th:attr="data-id=${grade.gradeId},
+                 data-value=${grade.gradeValue},
+                 data-comments=${grade.comments}">
+                                ✏️ Edit
+                            </button>
+
+                            <button class="btn btn-danger btn-sm delete-btn"
+                                    th:attr="data-id=${grade.gradeId},
+                 data-name=${grade.student.firstName + ' ' + grade.student.lastName}">
+                                🗑️ Delete
+                            </button>
+
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${grades == null or grades.empty}" class="empty-state">
+            <div class="icon">📋</div>
+            <h3>No Grades Found</h3>
+            <p>There are no grades matching your current filters.</p>
+            <button class="btn btn-primary" onclick="openModal('addGradeModal')">
+                ➕ Add Your First Grade
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Grade Modal -->
+<div id="addGradeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>➕ Add New Grade</h3>
+            <button class="modal-close" onclick="closeModal('addGradeModal')">&times;</button>
+        </div>
+        <form method="post" action="/teacher/grades/create">
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Assignment *</label>
+                    <select name="assignmentId" required id="assignmentSelect" onchange="loadStudents()">
+                        <option value="">Select Assignment</option>
+                        <option th:each="assignment : ${assignments}"
+                                th:if="${assignment != null and assignment.subject != null}"
+                                th:value="${assignment.assignmentId}"
+                                th:text="${assignment.subject.subjectName} + ' - ' + ${assignment.group.groupName}"
+                                th:attr="data-students=${assignment.group != null and assignment.group.students != null ? #strings.toString(assignment.group.students) : '[]'}">
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Student *</label>
+                    <select name="studentId" required id="studentSelect">
+                        <option value="">Select Student</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Grade Value (1-10) *</label>
+                    <input type="number" name="gradeValue" min="1" max="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Comments</label>
+                    <textarea name="comments" rows="3" placeholder="Optional comments about the grade"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addGradeModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">✓ Add Grade</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Grade Modal -->
+<div id="editGradeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✏️ Edit Grade</h3>
+            <button class="modal-close" onclick="closeModal('editGradeModal')">&times;</button>
+        </div>
+        <form method="post" id="editGradeForm">
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Grade Value (1-10) *</label>
+                    <input type="number" name="gradeValue" id="editGradeValue" min="1" max="10" required>
+                </div>
+                <div class="form-group">
+                    <label>Comments</label>
+                    <textarea name="comments" id="editComments" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editGradeModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">✓ Update Grade</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Grade Modal -->
+<div id="deleteGradeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header" style="background: #ef4444;">
+            <h3>🗑️ Delete Grade</h3>
+            <button class="modal-close" onclick="closeModal('deleteGradeModal')">&times;</button>
+        </div>
+        <form method="post" id="deleteGradeForm">
+            <div class="modal-body">
+                <p>Are you sure you want to delete this grade for <strong id="deleteStudentName"></strong>?</p>
+                <p style="color: #ef4444; margin-top: 1rem;">⚠️ This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('deleteGradeModal')">Cancel</button>
+                <button type="submit" class="btn btn-danger">🗑️ Delete Grade</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    // Store assignments data - safely passed from controller
+    const assignmentsData = /*[[${safeAssignments}]]*/ [];
+
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('show');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('show');
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.classList.remove('show');
+        }
+    }
+
+    function loadStudents() {
+        const assignmentSelect = document.getElementById('assignmentSelect');
+        const studentSelect = document.getElementById('studentSelect');
+        const assignmentId = assignmentSelect.value;
+
+        // Clear current students
+        studentSelect.innerHTML = '<option value="">Select Student</option>';
+
+        if (!assignmentId) return;
+
+        // Debug: Log the data
+        console.log('Assignment ID:', assignmentId);
+        console.log('All assignments data:', assignmentsData);
+
+        // Find the selected assignment
+        const assignment = assignmentsData.find(a => String(a.assignmentId) === String(assignmentId));
+
+        console.log('Found assignment:', assignment);
+
+        if (assignment && assignment.group && assignment.group.students) {
+            console.log('Students found:', assignment.group.students);
+
+            if (assignment.group.students.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No students in this group';
+                studentSelect.appendChild(option);
+                return;
+            }
+
+            assignment.group.students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.studentId;
+                option.textContent = `${student.firstName} ${student.lastName}`;
+                studentSelect.appendChild(option);
+            });
+        } else {
+            console.log('No students data found');
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No students available';
+            studentSelect.appendChild(option);
+        }
+    }
+
+    function openEditModal(gradeId, gradeValue, comments) {
+        document.getElementById('editGradeValue').value = gradeValue;
+        document.getElementById('editComments').value = comments || '';
+        document.getElementById('editGradeForm').action = '/teacher/grades/update/' + gradeId;
+        openModal('editGradeModal');
+    }
+
+    function openDeleteModal(gradeId, studentName) {
+        document.getElementById('deleteStudentName').textContent = studentName;
+        document.getElementById('deleteGradeForm').action = '/teacher/grades/delete/' + gradeId;
+        openModal('deleteGradeModal');
+    }
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('edit-btn')) {
+            let id = e.target.dataset.id;
+            let value = e.target.dataset.value;
+            let comments = e.target.dataset.comments || '';
+
+            openEditModal(id, value, comments);
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('delete-btn')) {
+            openDeleteModal(e.target.dataset.id, e.target.dataset.name);
+        }
+    });
+
+
+</script>
+</body>
+</html>

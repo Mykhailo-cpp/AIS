@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Academic Information System</title>
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-content">
+        <h1>
+            <span aria-hidden="true">🎓</span>
+            Academic Information System
+        </h1>
+        <div class="navbar-right">
+            <div class="user-info">
+                    <span aria-label="Current user">
+                        <span aria-hidden="true">👤</span>
+                        <span th:text="${currentUser}">Admin</span>
+                    </span>
+                <span>(Administrator)</span>
+            </div>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container">
+    <!-- Welcome Card -->
+    <section class="welcome-card">
+        <h2>Welcome, Administrator!</h2>
+        <p>Manage students, teachers, groups, and subjects from your dashboard.</p>
+    </section>
+
+    <!-- Statistics -->
+    <section class="stats-grid" aria-label="System statistics">
+        <article class="stat-card">
+            <div class="icon" aria-hidden="true">👨‍🎓</div>
+            <h3>Total Students</h3>
+            <div class="number" th:text="${stats.totalStudents}">0</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="icon" aria-hidden="true">👨‍🏫</div>
+            <h3>Total Teachers</h3>
+            <div class="number" th:text="${stats.totalTeachers}">0</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="icon" aria-hidden="true">👥</div>
+            <h3>Student Groups</h3>
+            <div class="number" th:text="${stats.totalGroups}">0</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="icon" aria-hidden="true">📚</div>
+            <h3>Subjects</h3>
+            <div class="number" th:text="${stats.totalSubjects}">0</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="icon" aria-hidden="true">📝</div>
+            <h3>Total Grades</h3>
+            <div class="number" th:text="${stats.totalGrades}">0</div>
+        </article>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <h2>Quick Actions</h2>
+        <nav class="action-grid" aria-label="Quick actions">
+            <a href="/admin/students" class="action-btn">
+                <div class="icon" aria-hidden="true">👨‍🎓</div>
+                <div>Manage Students</div>
+            </a>
+
+            <a href="/admin/teachers" class="action-btn">
+                <div class="icon" aria-hidden="true">👨‍🏫</div>
+                <div>Manage Teachers</div>
+            </a>
+
+            <a href="/admin/groups" class="action-btn">
+                <div class="icon" aria-hidden="true">👥</div>
+                <div>Manage Groups</div>
+            </a>
+
+            <a href="/admin/subjects" class="action-btn">
+                <div class="icon" aria-hidden="true">📚</div>
+                <div>Manage Subjects</div>
+            </a>
+        </nav>
+    </section>
+</main>
+</body>
+</html>

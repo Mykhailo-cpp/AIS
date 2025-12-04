@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Academic Information System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .welcome-card h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-card p {
+            color: #666;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 40px;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .subjects-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .subjects-section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .subject-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .subject-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .subject-code {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .subject-info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 0.5rem;
+        }
+
+        .subject-info span {
+            margin-right: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .no-subjects {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .no-subjects .icon {
+            font-size: 60px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<div class="navbar">
+    <div class="navbar-content">
+        <h1>🎓 Academic Information System</h1>
+        <div class="navbar-right">
+            <div class="nav-links">
+                <a href="/teacher/dashboard">Dashboard</a>
+                <a href="/teacher/grades">Manage Grades</a>
+            </div>
+            <div class="user-info">
+                <span>👨‍🏫 <span th:text="${currentUser}">Teacher</span></span>
+            </div>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Welcome Card -->
+    <div class="welcome-card">
+        <h2>Welcome, <span th:text="${currentUser}">Teacher</span>!</h2>
+        <p>Manage your subjects and student grades from your dashboard.</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="icon">📚</div>
+            <h3>MY SUBJECTS</h3>
+            <div class="number" th:text="${stats.totalSubjects}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="icon">👥</div>
+            <h3>TOTAL STUDENTS</h3>
+            <div class="number" th:text="${stats.totalStudents}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="icon">📝</div>
+            <h3>GRADES ASSIGNED</h3>
+            <div class="number" th:text="${stats.totalGrades}">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="icon">📊</div>
+            <h3>AVERAGE GRADE</h3>
+            <div class="number" th:text="${stats.averageGrade != null ? #numbers.formatDecimal(stats.averageGrade, 1, 2) : '0.0'}">0.0</div>
+        </div>
+    </div>
+
+    <!-- My Subjects -->
+    <div class="subjects-section">
+        <h2>📚 My Subjects</h2>
+
+        <div th:if="${subjects != null && !subjects.isEmpty()}">
+            <div th:each="subject : ${subjects}" class="subject-card">
+                <div class="subject-header">
+                    <div class="subject-name" th:text="${subject.subject.subjectName}">Object-Oriented Programming</div>
+                    <div class="subject-code" th:text="${subject.subject.subjectCode}">CS201-G1</div>
+                </div>
+                <div class="subject-info">
+                    <span>👥 Group: <strong th:text="${subject.group != null ? subject.group.groupName : 'Not assigned'}">CS-2024-1</strong></span>
+                    <span>📊 Credits: <strong th:text="${subject.subject.credits}">6</strong></span>
+                    <span>📅 Year: <strong th:text="${subject.academicYear}">2024/2025</strong></span>
+                    <span>📆 Semester: <strong th:text="${subject.semester}">Fall</strong></span>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <a th:href="@{/teacher/grades(assignmentId=${subject.assignmentId})}" class="btn btn-primary">
+                        Manage Grades
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${subjects == null || subjects.isEmpty()}" class="no-subjects">
+            <div class="icon">📚</div>
+            <h3>No Subjects Assigned</h3>
+            <p>You haven't been assigned to any subjects yet. Please contact the administrator.</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

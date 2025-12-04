@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="7-v3" author="mykhailo">
+        <createTable tableName="grade">
+            <column name="grade_id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="student_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_grade_student"
+                             references="student(student_id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="assignment_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_grade_assignment"
+                             references="subject_assignment(assignment_id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="grade_value" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="grade_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comments" type="VARCHAR(500)"/>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="grade"
+                columnNames="student_id, assignment_id"
+                constraintName="uk_student_assignment_grade"/>
+    </changeSet>
+</databaseChangeLog>

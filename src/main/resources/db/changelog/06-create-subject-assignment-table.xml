@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="6-v3" author="mykhailo">
+        <createTable tableName="subject_assignment">
+            <column name="assignment_id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="subject_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_assignment_subject"
+                             references="subject(subject_id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="teacher_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_assignment_teacher"
+                             references="teacher(teacher_id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="group_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_assignment_group"
+                             references="study_group(group_id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="academic_year" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="semester" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="subject_assignment"
+                columnNames="subject_id, teacher_id, group_id, academic_year, semester"
+                constraintName="uk_assignment_unique"/>
+    </changeSet>
+</databaseChangeLog>

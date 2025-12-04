@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Subjects - Academic Information System</title>
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-content">
+        <h1>
+            <span aria-hidden="true">🎓</span>
+            Academic Information System
+        </h1>
+        <div class="navbar-links">
+            <a href="/admin/dashboard">Dashboard</a>
+            <a href="/admin/students">Students</a>
+            <a href="/admin/teachers">Teachers</a>
+            <a href="/admin/groups">Groups</a>
+            <a href="/admin/subjects" class="active">Subjects</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container">
+    <!-- Page Header -->
+    <header class="page-header">
+        <h2>
+            <span aria-hidden="true">📚</span>
+            Manage Subjects
+        </h2>
+        <button class="btn btn-primary" onclick="openCreateModal()" aria-label="Add new subject">
+            <span aria-hidden="true">➕</span> Add New Subject
+        </button>
+    </header>
+
+    <!-- Alerts -->
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <span th:text="${success}">Success message</span>
+    </div>
+    <div th:if="${error}" class="alert alert-error" role="alert">
+        <span th:text="${error}">Error message</span>
+    </div>
+
+    <!-- Subjects Table -->
+    <section class="card">
+        <div class="table-container">
+            <table role="table" aria-label="Subjects list">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Subject Name</th>
+                    <th scope="col">Code</th>
+                    <th scope="col">Credits</th>
+                    <th scope="col">Teacher</th>
+                    <th scope="col">Group</th>
+                    <th scope="col">Year</th>
+                    <th scope="col">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="subject : ${subjects}">
+                    <td th:text="${subject.subjectId}">1</td>
+                    <td th:text="${subject.subjectName}">Mathematics</td>
+                    <td>
+                        <span class="badge badge-primary" th:text="${subject.subjectCode}">MATH101</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success" th:text="${subject.credits}">5</span>
+                    </td>
+                    <!-- Teacher -->
+                    <td>
+                        <span th:if="${!#lists.isEmpty(subject.assignments) and subject.assignments[0].teacher != null}"
+                              class="badge badge-info"
+                              th:text="${subject.assignments[0].teacher.fullName}">
+                            Teacher Name
+                        </span>
+                        <span th:if="${#lists.isEmpty(subject.assignments) or subject.assignments[0].teacher == null}"
+                              class="text-muted">
+                            Not assigned
+                        </span>
+                    </td>
+                    <!-- Group -->
+                    <td>
+                        <span th:if="${!#lists.isEmpty(subject.assignments) and subject.assignments[0].group != null}"
+                              class="badge badge-secondary"
+                              th:text="${subject.assignments[0].group.groupName}">
+                            Group Name
+                        </span>
+                        <span th:if="${#lists.isEmpty(subject.assignments) or subject.assignments[0].group == null}"
+                              class="text-muted">
+                            Not assigned
+                        </span>
+                    </td>
+                    <!-- Academic Year -->
+                    <td th:text="${!#lists.isEmpty(subject.assignments) ? subject.assignments[0].academicYear : 'N/A'}">
+                        2024/2025
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm"
+                                th:data-subject-id="${subject.subjectId}"
+                                onclick="openEditModal(this.getAttribute('data-subject-id'))"
+                                th:attr="aria-label='Edit ' + ${subject.subjectName}">
+                            Edit
+                        </button>
+                        <form th:action="@{/admin/subjects/delete/{id}(id=${subject.subjectId})}"
+                              method="post"
+                              class="form-inline"
+                              th:data-subject-name="${subject.subjectName}"
+                              onsubmit="return confirm('Are you sure you want to delete subject ' + this.getAttribute('data-subject-name') + '?')">
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    th:attr="aria-label='Delete ' + ${subject.subjectName}">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(subjects)}">
+                    <td colspan="8" class="text-center text-muted">No subjects found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- Create Subject Modal -->
+<div id="createModal" class="modal" role="dialog" aria-labelledby="createModalTitle" aria-hidden="true">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3 id="createModalTitle">Add New Subject</h3>
+            <button class="close" onclick="closeCreateModal()" aria-label="Close modal">&times;</button>
+        </header>
+        <form action="/admin/subjects/create" method="post">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="subjectName">Subject Name *</label>
+                    <input type="text" id="subjectName" name="subjectName" required
+                           placeholder="e.g., Mathematics">
+                </div>
+                <div class="form-group">
+                    <label for="subjectCode">Subject Code *</label>
+                    <input type="text" id="subjectCode" name="subjectCode" required
+                           placeholder="e.g., MATH101">
+                </div>
+                <div class="form-group">
+                    <label for="credits">Credits *</label>
+                    <input type="number" id="credits" name="credits" min="0" max="20" required
+                           value="5">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3"
+                              placeholder="Optional description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="academicYear">Academic Year</label>
+                    <input type="text" id="academicYear" name="academicYear" value="2024/2025"
+                           placeholder="e.g., 2024/2025">
+                </div>
+                <div class="form-group">
+                    <label for="semester">Semester</label>
+                    <select id="semester" name="semester">
+                        <option value="Fall">Fall</option>
+                        <option value="Spring">Spring</option>
+                        <option value="Summer">Summer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="teacherId">Teacher (Optional)</label>
+                    <select id="teacherId" name="teacherId">
+                        <option value="">Select teacher...</option>
+                        <option th:each="teacher : ${teachers}"
+                                th:value="${teacher.teacherId}"
+                                th:text="${teacher.fullName}">Teacher Name</option>
+                    </select>
+                    <small>Required if group is selected</small>
+                </div>
+                <div class="form-group">
+                    <label for="groupId">Group (Optional)</label>
+                    <select id="groupId" name="groupId">
+                        <option value="">Select group...</option>
+                        <option th:each="group : ${groups}"
+                                th:value="${group.groupId}"
+                                th:text="${group.groupName}">Group Name</option>
+                    </select>
+                    <small>Required if teacher is selected</small>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Subject</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Don't serialize full entities - causes circular reference errors
+    // We'll get data from the DOM instead
+
+    function openCreateModal() {
+        const modal = document.getElementById('createModal');
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        document.getElementById('subjectName').focus();
+    }
+
+    function closeCreateModal() {
+        const modal = document.getElementById('createModal');
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function openEditModal(subjectId) {
+        try {
+            console.log('Opening edit modal for subject ID:', subjectId);
+
+            // Get data directly from the table row
+            const button = document.querySelector(`button[data-subject-id="${subjectId}"]`);
+            console.log('Found button:', button);
+
+            if (!button) {
+                alert('Could not find subject');
+                return;
+            }
+
+            const row = button.closest('tr');
+            console.log('Found row:', row);
+
+            const cells = row.cells;
+
+            const subjectName = cells[1].textContent.trim();
+            const subjectCode = cells[2].querySelector('.badge').textContent.trim();
+            const credits = cells[3].querySelector('.badge').textContent.trim();
+
+            console.log('Subject data:', { subjectName, subjectCode, credits });
+
+            // Get current teacher and group from the table
+            const currentTeacher = cells[4].textContent.trim();
+            const currentGroup = cells[5].textContent.trim();
+
+            console.log('Current assignments:', { currentTeacher, currentGroup });
+
+            // Get all teacher options from the create modal
+            const createTeacherSelect = document.getElementById('teacherId');
+            const teacherOptions = Array.from(createTeacherSelect.options)
+                .map(opt => {
+                    const selected = opt.text.trim() === currentTeacher ? 'selected' : '';
+                    return opt.value === ''
+                        ? `<option value="">No teacher</option>`
+                        : `<option value="${opt.value}" ${selected}>${escapeHtml(opt.text)}</option>`;
+                })
+                .join('');
+
+            // Get all group options from the create modal
+            const createGroupSelect = document.getElementById('groupId');
+            const groupOptions = Array.from(createGroupSelect.options)
+                .map(opt => {
+                    const selected = opt.text.trim() === currentGroup ? 'selected' : '';
+                    return opt.value === ''
+                        ? `<option value="">No group</option>`
+                        : `<option value="${opt.value}" ${selected}>${escapeHtml(opt.text)}</option>`;
+                })
+                .join('');
+
+            const modalHTML = `
+                <div id="editModal" class="modal show" role="dialog" aria-labelledby="editModalTitle">
+                    <div class="modal-content">
+                        <header class="modal-header">
+                            <h3 id="editModalTitle">Edit Subject</h3>
+                            <button class="close" onclick="closeEditModal()" aria-label="Close modal">&times;</button>
+                        </header>
+                        <form action="/admin/subjects/update/${subjectId}" method="post">
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="editSubjectName">Subject Name *</label>
+                                    <input type="text" id="editSubjectName" name="subjectName"
+                                           value="${escapeHtml(subjectName)}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editSubjectCode">Subject Code *</label>
+                                    <input type="text" id="editSubjectCode" name="subjectCode"
+                                           value="${escapeHtml(subjectCode)}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editCredits">Credits *</label>
+                                    <input type="number" id="editCredits" name="credits"
+                                           value="${credits}" min="0" max="20" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editDescription">Description</label>
+                                    <textarea id="editDescription" name="description" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editAcademicYear">Academic Year</label>
+                                    <input type="text" id="editAcademicYear" name="academicYear" value="2024/2025">
+                                </div>
+                                <div class="form-group">
+                                    <label for="editSemester">Semester</label>
+                                    <select id="editSemester" name="semester">
+                                        <option value="Fall">Fall</option>
+                                        <option value="Spring">Spring</option>
+                                        <option value="Summer">Summer</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editTeacherId">Teacher (Optional)</label>
+                                    <select id="editTeacherId" name="teacherId">
+                                        ${teacherOptions}
+                                    </select>
+                                    <small>Required if group is selected</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editGroupId">Group (Optional)</label>
+                                    <select id="editGroupId" name="groupId">
+                                        ${groupOptions}
+                                    </select>
+                                    <small>Required if teacher is selected</small>
+                                </div>
+                            </div>
+                            <footer class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Update Subject</button>
+                            </footer>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            document.getElementById('editSubjectName').focus();
+        } catch (error) {
+            console.error('Error in openEditModal:', error);
+            alert('Error opening edit modal: ' + error.message);
+        }
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.classList.remove('show');
+            event.target.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+            });
+        }
+    });
+</script>
+</body>
+</html>

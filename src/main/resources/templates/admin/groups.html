@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Groups - Academic Information System</title>
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-content">
+        <h1>
+            <span aria-hidden="true">🎓</span>
+            Academic Information System
+        </h1>
+        <div class="navbar-links">
+            <a href="/admin/dashboard">Dashboard</a>
+            <a href="/admin/students">Students</a>
+            <a href="/admin/teachers">Teachers</a>
+            <a href="/admin/groups" class="active">Groups</a>
+            <a href="/admin/subjects">Subjects</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container">
+    <!-- Page Header -->
+    <header class="page-header">
+        <h2>
+            <span aria-hidden="true">👥</span>
+            Manage Groups
+        </h2>
+        <button class="btn btn-primary" onclick="openCreateModal()" aria-label="Add new group">
+            <span aria-hidden="true">➕</span> Add New Group
+        </button>
+    </header>
+
+    <!-- Alerts -->
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <span th:text="${success}">Success message</span>
+    </div>
+    <div th:if="${error}" class="alert alert-error" role="alert">
+        <span th:text="${error}">Error message</span>
+    </div>
+
+    <!-- Groups Table -->
+    <section class="card">
+        <div class="table-container">
+            <table role="table" aria-label="Groups list">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Group Name</th>
+                    <th scope="col">Year</th>
+                    <th scope="col">Students</th>
+                    <th scope="col">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="group : ${groups}">
+                    <td th:text="${group.groupId}">1</td>
+                    <td>
+                        <span class="badge badge-primary" th:text="${group.groupName}">CS-2024-1</span>
+                    </td>
+                    <td th:text="${group.year}">2024</td>
+                    <td>
+                        <span class="badge badge-info"
+                              th:text="${group.students != null ? group.students.size() : 0}">0</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm"
+                                th:data-group-id="${group.groupId}"
+                                th:data-group-name="${group.groupName}"
+                                th:data-year="${group.year}"
+                                onclick="openEditModal(this.getAttribute('data-group-id'), this.getAttribute('data-group-name'), this.getAttribute('data-year'))"
+                                th:attr="aria-label='Edit ' + ${group.groupName}">
+                            Edit
+                        </button>
+                        <form th:action="@{/admin/groups/delete/{id}(id=${group.groupId})}"
+                              method="post"
+                              class="form-inline"
+                              th:data-group-name="${group.groupName}"
+                              onsubmit="return confirm('Are you sure you want to delete group ' + this.getAttribute('data-group-name') + '?')">
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    th:attr="aria-label='Delete ' + ${group.groupName}">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(groups)}">
+                    <td colspan="5" class="text-center text-muted">No groups found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- Create Group Modal -->
+<div id="createModal" class="modal" role="dialog" aria-labelledby="createModalTitle" aria-hidden="true">
+    <div class="modal-content">
+        <header class="modal-header">
+            <h3 id="createModalTitle">Add New Group</h3>
+            <button class="close" onclick="closeCreateModal()" aria-label="Close modal">&times;</button>
+        </header>
+        <form action="/admin/groups/create" method="post">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="groupName">Group Name *</label>
+                    <input type="text" id="groupName" name="groupName" required
+                           placeholder="e.g., CS-2024-1">
+                </div>
+                <div class="form-group">
+                    <label for="year">Year *</label>
+                    <input type="number" id="year" name="year" required
+                           min="2000" max="2100" value="2024">
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Group</button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Don't serialize full entities - causes circular reference errors
+
+    function openCreateModal() {
+        const modal = document.getElementById('createModal');
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        document.getElementById('groupName').focus();
+    }
+
+    function closeCreateModal() {
+        const modal = document.getElementById('createModal');
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function openEditModal(groupId, groupName, year) {
+        const modalHTML = `
+            <div id="editModal" class="modal show" role="dialog" aria-labelledby="editModalTitle">
+                <div class="modal-content">
+                    <header class="modal-header">
+                        <h3 id="editModalTitle">Edit Group</h3>
+                        <button class="close" onclick="closeEditModal()" aria-label="Close modal">&times;</button>
+                    </header>
+                    <form action="/admin/groups/update/${groupId}" method="post">
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="editGroupName">Group Name *</label>
+                                <input type="text" id="editGroupName" name="groupName"
+                                       value="${escapeHtml(groupName)}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editYear">Year *</label>
+                                <input type="number" id="editYear" name="year"
+                                       value="${year}" min="2000" max="2100" required>
+                            </div>
+                        </div>
+                        <footer class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Group</button>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.getElementById('editGroupName').focus();
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.classList.remove('show');
+            event.target.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+            });
+        }
+    });
+</script>
+</body>
+</html>

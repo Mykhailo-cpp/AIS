@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <include file="01-create-user-table.xml" relativeToChangelogFile="true"/>
+    <include file="02-create-group-table.xml" relativeToChangelogFile="true"/>
+    <include file="03-create-student-table.xml" relativeToChangelogFile="true"/>
+    <include file="04-create-teacher-table.xml" relativeToChangelogFile="true"/>
+    <include file="05-create-subject-table.xml" relativeToChangelogFile="true"/>
+    <include file="06-create-subject-assignment-table.xml" relativeToChangelogFile="true"/>
+    <include file="07-create-grade-table.xml" relativeToChangelogFile="true"/>
+    <include file="08-create-administrator-table.xml" relativeToChangelogFile="true"/>
+    <include file="09-insert-default-admin.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

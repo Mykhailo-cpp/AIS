@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Students - Academic Information System</title>
+  <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="navbar-content">
+    <h1>
+      <span aria-hidden="true">🎓</span>
+      Academic Information System
+    </h1>
+    <div class="navbar-links">
+      <a href="/admin/dashboard">Dashboard</a>
+      <a href="/admin/students" class="active">Students</a>
+      <a href="/admin/teachers">Teachers</a>
+      <a href="/admin/groups">Groups</a>
+      <a href="/admin/subjects">Subjects</a>
+      <a href="/logout">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container">
+  <!-- Page Header -->
+  <header class="page-header">
+    <h2>
+      <span aria-hidden="true">👨‍🎓</span>
+      Manage Students
+    </h2>
+    <button class="btn btn-primary" onclick="openCreateModal()" aria-label="Add new student">
+      <span aria-hidden="true">➕</span> Add New Student
+    </button>
+  </header>
+
+  <!-- Alerts -->
+  <div th:if="${success}" class="alert alert-success" role="alert">
+    <span th:text="${success}">Success message</span>
+  </div>
+  <div th:if="${error}" class="alert alert-error" role="alert">
+    <span th:text="${error}">Error message</span>
+  </div>
+
+  <!-- Students Table -->
+  <section class="card">
+    <div class="table-container">
+      <table role="table" aria-label="Students list">
+        <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Name</th>
+          <th scope="col">Username</th>
+          <th scope="col">Email</th>
+          <th scope="col">Group</th>
+          <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="student : ${students}">
+          <td th:text="${student.studentId}">1</td>
+          <td th:text="${student.fullName}">John Doe</td>
+          <td>
+            <span class="badge badge-primary" th:text="${student.username}">john</span>
+          </td>
+          <td th:text="${student.email}">john@email.com</td>
+          <td>
+            <span th:if="${student.group != null}"
+                  class="badge badge-secondary"
+                  th:text="${student.group.groupName}">CS-2024-1</span>
+            <span th:if="${student.group == null}"
+                  class="text-muted">No group</span>
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-sm"
+                    th:data-student-id="${student.studentId}"
+                    th:data-first-name="${student.firstName}"
+                    th:data-last-name="${student.lastName}"
+                    th:data-email="${student.email}"
+                    th:data-group-id="${student.group != null ? student.group.groupId : ''}"
+                    onclick="openEditModal(this.getAttribute('data-student-id'), this.getAttribute('data-first-name'), this.getAttribute('data-last-name'), this.getAttribute('data-email'), this.getAttribute('data-group-id'))"
+                    th:attr="aria-label='Edit ' + ${student.fullName}">
+              Edit
+            </button>
+            <form th:if="${student.studentId != null}"
+                  th:action="@{/admin/students/delete/{id}(id=${student.studentId})}"
+                  method="post"
+                  class="form-inline"
+                  th:data-student-name="${student.fullName}"
+                  onsubmit="return confirm('Are you sure you want to delete student ' + this.getAttribute('data-student-name') + '?')">
+              <button type="submit"
+                      class="btn btn-danger btn-sm"
+                      th:attr="aria-label='Delete ' + ${student.fullName}">
+                Delete
+              </button>
+            </form>
+            <button th:if="${student.studentId == null}"
+                    class="btn btn-danger btn-sm"
+                    disabled
+                    title="Invalid student ID">
+              Delete
+            </button>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(students)}">
+          <td colspan="6" class="text-center text-muted">No students found</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- Create Student Modal -->
+<div id="createModal" class="modal" role="dialog" aria-labelledby="createModalTitle" aria-hidden="true">
+  <div class="modal-content">
+    <header class="modal-header">
+      <h3 id="createModalTitle">Add New Student</h3>
+      <button class="close" onclick="closeCreateModal()" aria-label="Close modal">&times;</button>
+    </header>
+    <form action="/admin/students/create" method="post">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="firstName">First Name *</label>
+          <input type="text" id="firstName" name="firstName" required>
+          <small>This will be the username</small>
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name *</label>
+          <input type="text" id="lastName" name="lastName" required>
+          <small>This will be the password</small>
+        </div>
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="groupId">Group (Optional)</label>
+          <select id="groupId" name="groupId">
+            <option value="">Select a group...</option>
+            <option th:each="group : ${groups}"
+                    th:value="${group.groupId}"
+                    th:text="${group.groupName}">CS-2024-1</option>
+          </select>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Student</button>
+      </footer>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Don't serialize full entities - causes circular reference errors
+
+  function openCreateModal() {
+    const modal = document.getElementById('createModal');
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    document.getElementById('firstName').focus();
+  }
+
+  function closeCreateModal() {
+    const modal = document.getElementById('createModal');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function openEditModal(studentId, firstName, lastName, email, groupId) {
+    // Get group options from create modal
+    const createGroupSelect = document.getElementById('groupId');
+    const groupOptions = Array.from(createGroupSelect.options)
+            .map(opt => {
+              const selected = opt.value === groupId ? 'selected' : '';
+              return `<option value="${opt.value}" ${selected}>${escapeHtml(opt.text)}</option>`;
+            })
+            .join('');
+
+    const modalHTML = `
+      <div id="editModal" class="modal show" role="dialog" aria-labelledby="editModalTitle">
+        <div class="modal-content">
+          <header class="modal-header">
+            <h3 id="editModalTitle">Edit Student</h3>
+            <button class="close" onclick="closeEditModal()" aria-label="Close modal">&times;</button>
+          </header>
+          <form action="/admin/students/update/${studentId}" method="post">
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="editFirstName">First Name *</label>
+                <input type="text" id="editFirstName" name="firstName" value="${escapeHtml(firstName)}" required>
+              </div>
+              <div class="form-group">
+                <label for="editLastName">Last Name *</label>
+                <input type="text" id="editLastName" name="lastName" value="${escapeHtml(lastName)}" required>
+              </div>
+              <div class="form-group">
+                <label for="editEmail">Email *</label>
+                <input type="email" id="editEmail" name="email" value="${escapeHtml(email)}" required>
+              </div>
+              <div class="form-group">
+                <label for="editGroupId">Group</label>
+                <select id="editGroupId" name="groupId">
+                  ${groupOptions}
+                </select>
+              </div>
+            </div>
+            <footer class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Update Student</button>
+            </footer>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.getElementById('editFirstName').focus();
+  }
+
+  function closeEditModal() {
+    const modal = document.getElementById('editModal');
+    if (modal) {
+      modal.remove();
+    }
+  }
+
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+  }
+
+  // Close modals when clicking outside
+  window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal')) {
+      event.target.classList.remove('show');
+      event.target.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  // Close modals with Escape key
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      const modals = document.querySelectorAll('.modal.show');
+      modals.forEach(modal => {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+      });
+    }
+  });
+</script>
+</body>
+</html>
