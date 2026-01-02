@@ -2,24 +2,6 @@
 
 A comprehensive, Academic Information System built with Spring Boot, featuring JWT authentication, role-based access control, and a modern RESTful API architecture.
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Architecture](#architecture)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running with Docker](#running-with-docker)
-  - [Running Locally](#running-locally)
-- [API Documentation](#api-documentation)
-- [Project Structure](#project-structure)
-- [Security](#security)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## 🎯 Overview
 
 The Academic Information System (AIS) is a robust platform designed to manage academic operations including student enrollment, teacher assignments, grade management, and administrative tasks. The system provides a secure, scalable solution with modern authentication mechanisms and clean architecture principles.
